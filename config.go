@@ -64,7 +64,7 @@ func findConfig() (file, error) {
 		}
 
 		d = filepath.Dir(d)
-		if d == "" {
+		if d == "/" {
 			break
 		}
 	}
