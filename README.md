@@ -22,7 +22,7 @@ Problem is, I'm not there. The BSR isn't an option atm.  Renaming my imports isn
 
 I could make it work with protoc, but again, it should die in a fire.  Frankly, it was made for Google and Blaze.  It makes no sense in the regular world where the monorepo and Blaze doesn't exist.
 
-Buf has redone most of the proto compiling internally and so their tools is superior in almost everyway.  If you aren't constrained like me, just use their stuff the way it wants.
+__Buf has redone most of the proto compiling internally and so their tools is superior in almost everyway.  If you aren't constrained like me, just use their stuff the way it wants.__
 
 ## HowTo
 Here is what you need:
