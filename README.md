@@ -5,7 +5,7 @@ A tool for compiling protos with full directory paths and cross repo compiles.
 
 ## Introduction
 
-Protocol buffers rock, but protoc should die in a fire. Buf CLI (http://buf.build)has come along to save the day, but it only works the way it wants to work.
+Protocol buffers rock, but protoc should die in a fire. Buf CLI [buf.build](http://buf.build) has come along to save the day, but it only works the way it wants to work.
 
 That is fine, but I require the use of full import paths and I don't care about modules. I need it to compile across private repos.
 
