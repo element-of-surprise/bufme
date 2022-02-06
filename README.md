@@ -36,6 +36,7 @@ rootDir/
 * rootDir is a directory holding all the repos you need.
 * repo[A,B,C]/ are individual git repos
 * bufme.config holds the config for this group of repos
+* proto imports should be in the form of `import "repoA/some/dir/structure/name_of_proto.proto";`
 
 bufme.config is a JSON file that contains `{"Root":"/full/path/to/rootDir"}`
 
