@@ -27,11 +27,13 @@ Buf has redone most of the proto compiling internally and so their tools is supe
 ## HowTo
 Here is what you need:
 
+```
 rootDir/
   repoA/
   repoB/
   repoC/
   bufme.config
+```
 
 * rootDir is a directory holding all the repos you need.
 * repo[A,B,C]/ are individual git repos
