@@ -43,7 +43,7 @@ plugins:
   - name: go
     out: ./generated/
     opt: paths=source_relative
-  - plugin: buf.build/grpc/plugins/go:v1.3.0
+  - plugin: buf.build/grpc/go:v1.3.0
     out: ./
     opt:
       - paths=source_relative
