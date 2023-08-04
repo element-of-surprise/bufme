@@ -52,9 +52,6 @@ plugins:
     out: ./
     opt:
       - paths=source_relative
-{{- range .VTProtoOpts.Pools }}
-      - pool = {{ . }}
-{{ end }}
 `
 
 	bufGenFileTmpl = template.Must(template.New("bufGenFile").Parse(bufGenFileTmplText))
