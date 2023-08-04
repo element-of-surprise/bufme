@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"text/template"
 	"unsafe"
 
 	gfs "github.com/gopherfs/fs"
@@ -37,7 +38,7 @@ directories:
   - work
 `))
 
-	bufGenFile = bytes.TrimSpace([]byte(`
+	bufGenFileTmplText = `
 version: v1
 plugins:
   - name: go
@@ -47,7 +48,16 @@ plugins:
     out: ./
     opt:
       - paths=source_relative
-`))
+  - plugin: go-vtproto
+    out: ./
+    opt:
+      - paths=source_relative
+{{- range .VTProtoOpts.Pools }}
+	  - pool = {{ . }}
+{{ end }}
+`
+
+	bufGenFileTmpl = template.Must(template.New("bufGenFile").Parse(bufGenFileTmplText))
 
 	bufYAMLFile = bytes.TrimSpace([]byte(`
 version: v1
@@ -307,6 +317,9 @@ func builder(fs *simple.FS) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	// Note: I think this is here for diagnostics.  It's not clear to me any longer
+	// that it's needed.
 	for _, e := range dirs {
 		if e.IsDir() {
 			roots = append(roots, e.Name())
@@ -316,7 +329,11 @@ func builder(fs *simple.FS) (string, error) {
 	if err := fs.WriteFile("buf.work.yaml", bufWorkFile, 0600); err != nil {
 		return "", err
 	}
-	if err := fs.WriteFile("buf.gen.yaml", bufGenFile, 0600); err != nil {
+	b := &bytes.Buffer{}
+	if err := bufGenFileTmpl.Execute(b, config.VTProtoOpts); err != nil {
+		return "", err
+	}
+	if err := fs.WriteFile("buf.gen.yaml", b.Bytes(), 0600); err != nil {
 		return "", err
 	}
 	if err := fs.WriteFile("buf.yaml", bufYAMLFile, 0600); err != nil {

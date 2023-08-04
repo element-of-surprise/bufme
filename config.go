@@ -12,9 +12,15 @@ const (
 	name = "bufme.conf"
 )
 
+type vtProtoOpts struct {
+	Pools []string
+}
+
 type file struct {
 	// Root is the root path that holds all your git repos.
 	Root string
+
+	VTProtoOpts []vtProtoOpts
 }
 
 func (f *file) validate(p string) error {
