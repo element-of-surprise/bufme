@@ -20,7 +20,7 @@ type file struct {
 	// Root is the root path that holds all your git repos.
 	Root string
 
-	VTProtoOpts []vtProtoOpts
+	VTProtoOpts vtProtoOpts
 }
 
 func (f *file) validate(p string) error {
