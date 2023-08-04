@@ -330,7 +330,7 @@ func builder(fs *simple.FS) (string, error) {
 		return "", err
 	}
 	b := &bytes.Buffer{}
-	if err := bufGenFileTmpl.Execute(b, config.VTProtoOpts); err != nil {
+	if err := bufGenFileTmpl.Execute(b, config); err != nil {
 		return "", err
 	}
 	if err := fs.WriteFile("buf.gen.yaml", b.Bytes(), 0600); err != nil {
