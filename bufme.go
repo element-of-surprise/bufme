@@ -53,7 +53,7 @@ plugins:
     opt:
       - paths=source_relative
 {{- range .VTProtoOpts.Pools }}
-	  - pool = {{ . }}
+      - pool = {{ . }}
 {{ end }}
 `
 
