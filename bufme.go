@@ -29,7 +29,10 @@ const (
 	genDir = "generated"
 )
 
-var debug = flag.Bool("debug", false, "Turns on debugging")
+var (
+	debug = flag.Bool("debug", false, "Turns on debugging")
+	grpc  = flag.Bool("grpc", false, "Generates gRPC code instead of using VTPROTO")
+)
 
 var (
 	bufWorkFile = bytes.TrimSpace([]byte(`
@@ -44,14 +47,17 @@ plugins:
   - name: go
     out: ./generated/
     opt: paths=source_relative
-  - plugin: buf.build/grpc/go:v1.3.0
+  {{- if .Grpc }}
+  - plugin: buf.build/grpc/go:v1.4.0
     out: ./
     opt:
       - paths=source_relative
+  {{- else }}
   - plugin: go-vtproto
     out: ./
     opt:
       - paths=source_relative
+  {{- end }}
 `
 
 	bufGenFileTmpl = template.Must(template.New("bufGenFile").Parse(bufGenFileTmplText))
@@ -169,12 +175,14 @@ func main() {
 				}
 				fmt.Println("wrote: ", filepath.Join(config.Root, path))
 			}
+
 			return nil
 		},
 	)
 	if err != nil {
 		panic(err)
 	}
+
 	fmt.Println("Completed!")
 }
 
@@ -327,13 +335,14 @@ func builder(fs *simple.FS) (string, error) {
 		return "", err
 	}
 	b := &bytes.Buffer{}
-	if err := bufGenFileTmpl.Execute(b, config); err != nil {
+	bufGenOpts := struct{ Grpc bool }{Grpc: *grpc}
+	if err := bufGenFileTmpl.Execute(b, bufGenOpts); err != nil {
 		return "", err
 	}
 	if err := fs.WriteFile("buf.gen.yaml", b.Bytes(), 0600); err != nil {
 		return "", err
 	}
-	if err := fs.WriteFile("buf.yaml", bufYAMLFile, 0600); err != nil {
+	if err := fs.WriteFile("work/buf.yaml", bufYAMLFile, 0600); err != nil {
 		return "", err
 	}
 
@@ -366,6 +375,7 @@ func runBuf(dir string) error {
 	if err != nil {
 		return fmt.Errorf("problem running `buf generate`:\n%s", string(b))
 	}
+
 	return nil
 }
 
