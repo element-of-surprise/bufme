@@ -32,7 +32,7 @@ func (f *file) validate(p string) error {
 		if filepath.Clean(p) == filepath.Clean(u.HomeDir) {
 			return fmt.Errorf("cannot use set Root == '.' if the config file is in your home directory")
 		}
-		f.Root = filepath.Clean(p)
+		f.Root = filepath.Dir(filepath.Clean(p))
 	}
 	if _, err := os.Stat(f.Root); err != nil {
 		return fmt.Errorf("Root(%s) does not exist in the file system: %s", f.Root, err)

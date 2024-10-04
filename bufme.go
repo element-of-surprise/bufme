@@ -80,6 +80,7 @@ func init() {
 		panic(err)
 	}
 
+	log.Println("config.Root: ", config.Root)
 	entries, err := os.ReadDir(config.Root)
 	if err != nil {
 		panic(err)
