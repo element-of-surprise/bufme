@@ -46,10 +46,11 @@ version: v1
 plugins:
   - name: go
     out: ./generated/
-    opt: paths=source_relative
+    opt:
+      - paths=source_relative
   {{- if .Grpc }}
   - plugin: buf.build/grpc/go:v1.4.0
-    out: ./
+    out: ./generated/
     opt:
       - paths=source_relative
   {{- else }}
@@ -58,12 +59,22 @@ plugins:
     opt:
       - paths=source_relative
   {{- end }}
+  - plugin: buf.build/grpc-ecosystem/gateway:v2.24.0
+    out: ./generated/
+    opt:
+      - paths=source_relative
+      - generate_unbound_methods=true
+  - plugin: buf.build/grpc-ecosystem/openapiv2:v2.16.2
+    out: ./
 `
 
 	bufGenFileTmpl = template.Must(template.New("bufGenFile").Parse(bufGenFileTmplText))
 
 	bufYAMLFile = bytes.TrimSpace([]byte(`
 version: v1
+deps:
+  - buf.build/googleapis/googleapis
+  - buf.build/grpc-ecosystem/grpc-gateway
 `))
 )
 
@@ -140,7 +151,7 @@ func main() {
 	if *debug {
 		log.Println("tmp dir: ", dir)
 	} else {
-		defer os.RemoveAll(dir)
+		//defer os.RemoveAll(dir)
 	}
 
 	if err := runBuf(dir); err != nil {
@@ -156,6 +167,8 @@ func main() {
 		panic(err)
 	}
 
+	cpSuffixes := []string{"pb.go", "gw.go", "swagger.json"}
+
 	err = stdfs.WalkDir(
 		tmp,
 		".",
@@ -170,11 +183,13 @@ func main() {
 			if strings.HasPrefix(path, genDir+"/") {
 				path = strings.Split(path, genDir+"/")[1]
 			}
-			if strings.HasSuffix(path, "pb.go") {
-				if err := os.WriteFile(filepath.Join(config.Root, path), b, 0660); err != nil {
-					return err
+			for _, suffix := range cpSuffixes {
+				if strings.HasSuffix(path, suffix) {
+					if err := os.WriteFile(filepath.Join(config.Root, path), b, 0660); err != nil {
+						return err
+					}
+					fmt.Println("wrote: ", filepath.Join(config.Root, path))
 				}
-				fmt.Println("wrote: ", filepath.Join(config.Root, path))
 			}
 
 			return nil
@@ -369,10 +384,15 @@ func builder(fs *simple.FS) (string, error) {
 
 // runBuf runs the buf command line tool.
 func runBuf(dir string) error {
-	if err := os.Chdir(dir); err != nil {
+	if err := os.Chdir(filepath.Join(dir, "work")); err != nil {
 		return fmt.Errorf("could not change directories(%s): %w", dir, err)
 	}
-	b, err := exec.Command(`buf`, `generate`).CombinedOutput()
+	b, err := exec.Command(`buf`, `mod`, `update`).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("problem running `buf mod update`:\n%s", string(b))
+	}
+	os.Chdir(dir)
+	b, err = exec.Command(`buf`, `generate`).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("problem running `buf generate`:\n%s", string(b))
 	}
